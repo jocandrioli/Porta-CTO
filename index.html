@@ -5,1197 +5,1318 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Materiais GPON</title>
     <style>
-        :root {
-            --primary: #0066cc;
-            --primary-dark: #004499;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --border: #dee2e6;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #dee2e6;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .header-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: center;
         }
 
-        .user-name {
-            font-size: 0.9rem;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        /* ===== CONTAINER ===== */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        /* ===== VIEW MANAGEMENT ===== */
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-        }
-
-        /* ===== HOME VIEW ===== */
-        .home-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .menu-card {
+        /* ===== LOGIN ===== */
+        .login-container {
             background: white;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .menu-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .menu-card-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .menu-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        .menu-card p {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        /* ===== FORM STYLES ===== */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 1rem;
-            font-family: inherit;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .login-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-header h1 {
+            font-size: 24px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
         }
 
-        .form-group.required label::after {
-            content: ' *';
-            color: var(--danger);
-        }
-
-        /* ===== BUTTONS ===== */
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 12px 20px;
             border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.2s;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
         .btn-primary {
-            background-color: var(--primary);
+            background: var(--primary);
             color: white;
+            width: 100%;
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-dark);
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
         }
 
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
+        .alert {
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
         }
 
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-
-        .btn-small {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-        }
-
-        .btn-block {
-            width: 100%;
+        .alert.show {
             display: block;
-            margin-bottom: 0.5rem;
         }
 
-        .button-group {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
-        /* ===== CART/ITEMS ===== */
-        .cart-section {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .cart-section h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .cart-item {
+        .test-users {
             background: var(--light);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border-left: 4px solid var(--info);
+        }
+
+        .test-users h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .test-users p {
+            font-size: 13px;
+            color: #6c757d;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* ===== APLICAÇÃO PRINCIPAL ===== */
+        .app-container {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--light);
+        }
+
+        .app-container.show {
+            display: flex;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .cart-item-info {
-            flex: 1;
-        }
-
-        .cart-item-name {
-            font-weight: 600;
+        .navbar h2 {
             color: var(--dark);
+            font-size: 20px;
+            margin: 0;
         }
 
-        .cart-item-qty {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .cart-item-actions {
+        .user-info {
             display: flex;
-            gap: 0.5rem;
+            align-items: center;
+            gap: 15px;
         }
 
-        .empty-cart {
-            text-align: center;
-            padding: 2rem;
-            color: #999;
+        .user-info span {
+            color: #6c757d;
+            font-size: 14px;
         }
 
-        /* ===== TABLE ===== */
-        .table-responsive {
-            overflow-x: auto;
-            margin-bottom: 2rem;
+        .btn-logout {
+            background: var(--danger);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: var(--dark);
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        select {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .btn-register {
+            background: var(--success);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-register:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            font-size: 14px;
         }
 
-        table thead {
-            background-color: var(--light);
-            border-bottom: 2px solid var(--border);
-        }
-
-        table th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        table td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        table tbody tr:hover {
-            background-color: rgba(0,102,204,0.02);
-        }
-
-        /* ===== BADGES ===== */
-        .badge {
-            display: inline-block;
-            padding: 0.35rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background-color: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-        }
-
-        .badge-warning {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: #cc7700;
-        }
-
-        .badge-danger {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-
-        /* ===== INDICATORS ===== */
-        .stock-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-
-        .stock-indicator.green {
-            background-color: var(--success);
-        }
-
-        .stock-indicator.yellow {
-            background-color: var(--warning);
-        }
-
-        .stock-indicator.red {
-            background-color: var(--danger);
-        }
-
-        /* ===== ALERTS ===== */
-        .alert {
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            border-left: 4px solid;
-        }
-
-        .alert-success {
-            background-color: rgba(40, 167, 69, 0.1);
-            border-color: var(--success);
-            color: #155724;
-        }
-
-        .alert-warning {
-            background-color: rgba(255, 193, 7, 0.1);
-            border-color: var(--warning);
-            color: #856404;
-        }
-
-        .alert-danger {
-            background-color: rgba(220, 53, 69, 0.1);
-            border-color: var(--danger);
-            color: #721c24;
-        }
-
-        .alert-info {
-            background-color: rgba(0, 102, 204, 0.1);
-            border-color: var(--primary);
-            color: #004085;
-        }
-
-        /* ===== MODAL ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-
-        .modal-header {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--dark);
-        }
-
-        .modal-body {
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
-        }
-
-        /* ===== KANBAN ===== */
-        .kanban-board {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .kanban-column {
+        thead {
             background: var(--light);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            min-height: 400px;
-        }
-
-        .kanban-header {
-            font-weight: 600;
-            padding: 0.5rem 0;
-            margin-bottom: 1rem;
             border-bottom: 2px solid var(--border);
-            color: var(--primary);
         }
 
-        .kanban-count {
-            font-size: 0.85rem;
-            color: #666;
-            margin-left: 0.5rem;
-        }
-
-        .kanban-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .kanban-card h4 {
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
+        th {
+            padding: 15px;
+            text-align: left;
             color: var(--dark);
+            font-weight: 600;
         }
 
-        .kanban-card-info {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 0.5rem;
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            color: #6c757d;
         }
 
-        .kanban-card-actions {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
+        tbody tr:hover {
+            background: var(--light);
         }
 
-        /* ===== RESPONSIVE ===== */
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card h3 {
+            color: #6c757d;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .number {
+            color: var(--dark);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 1.2rem;
-            }
-
-            .home-grid {
+            .form-row {
                 grid-template-columns: 1fr;
             }
 
-            .kanban-board {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
+            .main-content {
                 flex-direction: column;
             }
 
-            .btn-block {
+            .sidebar {
                 width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                overflow-x: auto;
             }
-        }
 
-        /* ===== PRINT ===== */
-        @media print {
-            .header, .btn, .logout-btn {
-                display: none;
+            .nav-item {
+                white-space: nowrap;
+                padding: 12px 15px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- HEADER -->
-    <div class="header">
-        <h1>📦 Controle de Materiais GPON</h1>
-        <div class="header-user">
-            <div class="user-name">
-                👤 <span id="username">Técnico</span>
-            </div>
-            <button class="logout-btn" onclick="logout()">Sair</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <!-- HOME VIEW -->
-        <div id="home" class="view active">
-            <div style="margin-bottom: 2rem;">
-                <h2 style="color: var(--primary); margin-bottom: 1rem;">📋 Menu Principal</h2>
-            </div>
-
-            <div class="home-grid">
-                <!-- Card 1: Retirar no Central -->
-                <div class="menu-card" onclick="goToView('retirada')">
-                    <div class="menu-card-icon">🏢</div>
-                    <h3>Retirar no Central</h3>
-                    <p>Retire materiais do estoque central para seu carro</p>
-                </div>
-
-                <!-- Card 2: Baixar em Evento -->
-                <div class="menu-card" onclick="goToView('consumo')">
-                    <div class="menu-card-icon">📞</div>
-                    <h3>Baixar em Evento</h3>
-                    <p>Registre consumo de materiais em eventos (SIGMA/FSP)</p>
-                </div>
-
-                <!-- Card 3: Meu Estoque -->
-                <div class="menu-card" onclick="goToView('meuEstoque')">
-                    <div class="menu-card-icon">🚗</div>
-                    <h3>Meu Estoque</h3>
-                    <p>Visualize o saldo de materiais no seu carro</p>
-                </div>
-
-                <!-- Card 4: Reposições -->
-                <div class="menu-card" onclick="goToView('reposicoes')">
-                    <div class="menu-card-icon">📊</div>
-                    <h3>Reposições (Kanban)</h3>
-                    <p>Gerencie reposições e reabastecimentos</p>
-                </div>
-            </div>
-
-            <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem;">
-                <h3 style="color: var(--primary); margin-bottom: 1rem;">📊 Resumo de Estoque</h3>
-                <div id="resumoEstoque">
-                    <p style="color: #666;">Carregando dados...</p>
-                </div>
-            </div>
+    <!-- LOGIN -->
+    <div id="login" class="login-container">
+        <div class="login-header">
+            <h1>🔐 Controle de Materiais</h1>
+            <p>GPON - Sistema de Acesso</p>
         </div>
 
-        <!-- RETIRADA VIEW -->
-        <div id="retirada" class="view">
-            <button class="btn btn-secondary" onclick="goToView('home')" style="margin-bottom: 1.5rem;">← Voltar</button>
+        <div id="loginAlert" class="alert alert-danger"></div>
 
-            <div style="background: white; border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
-                <h2 style="color: var(--primary); margin-bottom: 1.5rem;">🏢 Retirar no Estoque Central</h2>
-
-                <div class="form-group required">
-                    <label>Seu Nome (Técnico)</label>
-                    <select id="tecnicoRetirada">
-                        <option value="">-- Selecione --</option>
-                        <option value="João Silva">João Silva</option>
-                        <option value="Matheus Costa">Matheus Costa</option>
-                        <option value="Pedro Santos">Pedro Santos</option>
-                    </select>
-                </div>
-
-                <div class="form-group required">
-                    <label>Material a Retirar</label>
-                    <select id="materialRetirada">
-                        <option value="">-- Selecione --</option>
-                        <option value="Splitter 1:8">Splitter 1:8</option>
-                        <option value="CTO 16 portas">CTO 16 portas</option>
-                        <option value="Conector SC/APC">Conector SC/APC</option>
-                        <option value="Cabo Óptico 1km">Cabo Óptico 1km</option>
-                        <option value="Emenda Fusão">Emenda Fusão</option>
-                    </select>
-                </div>
-
-                <div class="form-group required">
-                    <label>Quantidade</label>
-                    <input type="number" id="quantidadeRetirada" min="1" value="1">
-                </div>
-
-                <div class="form-group">
-                    <label>Observação</label>
-                    <textarea id="obsRetirada" rows="2" placeholder="Opcional"></textarea>
-                </div>
-
-                <button class="btn btn-primary btn-block" onclick="adicionarItemRetirada()">+ Adicionar à Retirada</button>
+        <form id="loginForm" onsubmit="fazerLogin(event)">
+            <div class="form-group">
+                <label for="usuario">👤 Usuário</label>
+                <input type="text" id="usuario" placeholder="Digite seu usuário" required>
             </div>
-
-            <div class="cart-section">
-                <h3>🛒 Itens a Retirar</h3>
-                <div id="cartRetirada">
-                    <div class="empty-cart">Nenhum item adicionado</div>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-success btn-block" onclick="confirmarRetirada()">✓ Confirmar Retirada</button>
-                <button class="btn btn-secondary btn-block" onclick="limparCarrinho('retirada')">🗑️ Limpar</button>
-            </div>
-        </div>
-
-        <!-- CONSUMO VIEW -->
-        <div id="consumo" class="view">
-            <button class="btn btn-secondary" onclick="goToView('home')" style="margin-bottom: 1.5rem;">← Voltar</button>
-
-            <div style="background: white; border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
-                <h2 style="color: var(--primary); margin-bottom: 1.5rem;">📞 Baixar em Evento</h2>
-
-                <div id="alertValidacao"></div>
-
-                <div class="form-group required">
-                    <label>ID do Evento (SIGMA/FSP)</label>
-                    <input type="text" id="eventoID" placeholder="Ex: 12345678" maxlength="20">
-                    <small style="color: #666; margin-top: 0.3rem; display: block;">Cole o ID do evento do seu SIGMA/FSP</small>
-                </div>
-
-                <button class="btn btn-primary btn-block" onclick="validarEvento()">🔍 Validar Evento</button>
-
-                <div id="eventoDados" style="display: none; background: var(--light); border: 1px solid var(--border); border-radius: 4px; padding: 1rem; margin: 1rem 0;">
-                    <h4>Dados do Evento:</h4>
-                    <p><strong>ID:</strong> <span id="eventoDadosID"></span></p>
-                    <p><strong>Cluster:</strong> <span id="eventoDadosCluster"></span></p>
-                    <p><strong>Status:</strong> <span id="eventoDadosStatus"></span></p>
-                </div>
-
-                <div class="form-group required">
-                    <label>Material Consumido</label>
-                    <select id="materialConsumo">
-                        <option value="">-- Selecione --</option>
-                        <option value="Splitter 1:8">Splitter 1:8</option>
-                        <option value="CTO 16 portas">CTO 16 portas</option>
-                        <option value="Conector SC/APC">Conector SC/APC</option>
-                        <option value="Cabo Óptico 1km">Cabo Óptico 1km</option>
-                        <option value="Emenda Fusão">Emenda Fusão</option>
-                    </select>
-                </div>
-
-                <div class="form-group required">
-                    <label>Quantidade Consumida</label>
-                    <input type="number" id="quantidadeConsumo" min="1" value="1">
-                </div>
-
-                <div class="form-group">
-                    <label>Observação</label>
-                    <textarea id="obsConsumo" rows="2" placeholder="Opcional"></textarea>
-                </div>
-
-                <button class="btn btn-primary btn-block" onclick="adicionarItemConsumo()">+ Adicionar ao Consumo</button>
-            </div>
-
-            <div class="cart-section">
-                <h3>🛒 Itens a Consumir</h3>
-                <div id="cartConsumo">
-                    <div class="empty-cart">Nenhum item adicionado</div>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-success btn-block" onclick="confirmarConsumo()">✓ Confirmar Consumo</button>
-                <button class="btn btn-secondary btn-block" onclick="limparCarrinho('consumo')">🗑️ Limpar</button>
-            </div>
-        </div>
-
-        <!-- MEU ESTOQUE VIEW -->
-        <div id="meuEstoque" class="view">
-            <button class="btn btn-secondary" onclick="goToView('home')" style="margin-bottom: 1.5rem;">← Voltar</button>
-
-            <h2 style="color: var(--primary); margin-bottom: 1.5rem;">🚗 Meu Estoque (Carro)</h2>
 
             <div class="form-group">
-                <label>Seu Nome</label>
-                <select id="tecnicoEstoque" onchange="carregarMeuEstoque()">
-                    <option value="">-- Selecione --</option>
-                    <option value="João Silva">João Silva</option>
-                    <option value="Matheus Costa">Matheus Costa</option>
-                    <option value="Pedro Santos">Pedro Santos</option>
-                </select>
+                <label for="senha">🔑 Senha</label>
+                <input type="password" id="senha" placeholder="Digite sua senha" required>
             </div>
 
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Material</th>
-                            <th>Saldo</th>
-                            <th>Mínimo</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelaMeuEstoque">
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
-                                Selecione um técnico acima
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <button type="submit" class="btn btn-primary">🔓 Entrar</button>
+        </form>
 
-        <!-- REPOSIÇÕES VIEW -->
-        <div id="reposicoes" class="view">
-            <button class="btn btn-secondary" onclick="goToView('home')" style="margin-bottom: 1.5rem;">← Voltar</button>
-
-            <h2 style="color: var(--primary); margin-bottom: 1.5rem;">📊 Reposições (Kanban)</h2>
-
-            <div class="kanban-board">
-                <div class="kanban-column">
-                    <div class="kanban-header">🔴 Novo <span class="kanban-count" id="countNovo">0</span></div>
-                    <div id="kanbanNovo"></div>
-                </div>
-
-                <div class="kanban-column">
-                    <div class="kanban-header">🟡 Separado <span class="kanban-count" id="countSeparado">0</span></div>
-                    <div id="kanbanSeparado"></div>
-                </div>
-
-                <div class="kanban-column">
-                    <div class="kanban-header">🟠 Retirado <span class="kanban-count" id="countRetirado">0</span></div>
-                    <div id="kanbanRetirado"></div>
-                </div>
-
-                <div class="kanban-column">
-                    <div class="kanban-header">✅ Concluído <span class="kanban-count" id="countConcluido">0</span></div>
-                    <div id="kanbanConcluido"></div>
-                </div>
-            </div>
+        <div class="test-users">
+            <h3>👤 Usuários de Teste</h3>
+            <p>joao / 1234</p>
+            <p>matheus / 1234</p>
+            <p>pedro / 1234</p>
+            <p>admin / admin123</p>
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header" id="confirmTitle">Confirmar?</div>
-            <div class="modal-body" id="confirmMessage"></div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn btn-primary" id="confirmBtn" onclick="">Confirmar</button>
+    <!-- APLICAÇÃO -->
+    <div id="app" class="app-container">
+        <nav class="navbar">
+            <h2>📋 Controle de Materiais GPON</h2>
+            <div class="user-info">
+                <span>👤 <strong id="usuarioNome"></strong></span>
+                <button class="btn-logout" onclick="logout()">Sair</button>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="mostrarSecao('dashboard')">📊 Dashboard</div>
+                <div class="nav-item" onclick="mostrarSecao('registrar')">➕ Registrar Material</div>
+                <div class="nav-item" onclick="mostrarSecao('listar')">📋 Lista de Materiais</div>
+                <div class="nav-item" onclick="mostrarSecao('saidas')">📦 Saídas de Campo</div>
+                <div class="nav-item" onclick="mostrarSecao('entradas')">📥 Entradas/Devoluções</div>
+                <div id="navReabastecimento" class="nav-item" onclick="mostrarSecao('reabastecimento')" style="display: none;">🏭 Reabastecimento Central</div>
+                <div id="navUsuarios" class="nav-item" onclick="mostrarSecao('usuarios')" style="display: none;">👥 Gerenciar Usuários</div>
+            </div>
+
+            <div class="content">
+                <!-- DASHBOARD -->
+                <div id="dashboard" class="section active">
+                    <h2>📊 Dashboard</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total de Materiais</h3>
+                            <div class="number" id="totalMateriais">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Valor Total em Estoque</h3>
+                            <div class="number" id="valorTotal">R$ 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Saídas Registradas</h3>
+                            <div class="number" id="totalSaidas">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Entradas Registradas</h3>
+                            <div class="number" id="totalEntradas">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGISTRAR MATERIAL -->
+                <div id="registrar" class="section">
+                    <h2>➕ Registrar Novo Material</h2>
+                    <div class="form-section">
+                        <form id="formRegistro" onsubmit="registrarMaterial(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="categoria">📦 Categoria</label>
+                                    <select id="categoria" required>
+                                        <option value="">Selecione a categoria</option>
+                                        <option value="OLT">OLT (Optical Line Terminal)</option>
+                                        <option value="ONU">ONU (Optical Network Unit)</option>
+                                        <option value="Splitter">Splitter</option>
+                                        <option value="Fibra">Fibra Óptica</option>
+                                        <option value="Conector">Conector</option>
+                                        <option value="CTO">CTO</option>
+                                        <option value="Emenda">Emenda</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="modelo">📝 Modelo/Descrição</label>
+                                    <input type="text" id="modelo" placeholder="Ex: ONU Huawei HG8145V5" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="codigo">🔖 Código</label>
+                                    <input type="text" id="codigo" placeholder="Ex: HW001" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="serie">🏷️ Série</label>
+                                    <input type="text" id="serie" placeholder="Ex: SN123456">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="lote">📊 Lote</label>
+                                    <input type="text" id="lote" placeholder="Ex: LOT-2024-001">
+                                </div>
+                                <div class="form-group">
+                                    <label for="preco">💰 Preço Unitário (R$)</label>
+                                    <input type="number" id="preco" placeholder="0.00" step="0.01" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="quantidade">📈 Quantidade em Estoque</label>
+                                    <input type="number" id="quantidade" placeholder="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="localizacao">📍 Localização</label>
+                                    <input type="text" id="localizacao" placeholder="Ex: Prateleira A1">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-register">✅ Registrar Material</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- LISTAR MATERIAIS -->
+                <div id="listar" class="section">
+                    <h2>📋 Lista de Materiais em Estoque</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Modelo</th>
+                                    <th>Código</th>
+                                    <th>Série</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Total</th>
+                                    <th>Localização</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaMateriais"></tbody>
+                        </table>
+                        <div id="emptyMateriais" class="empty-message">Nenhum material registrado</div>
+                    </div>
+                </div>
+
+                <!-- SAÍDAS -->
+                <div id="saidas" class="section">
+                    <h2>📦 Registrar Saída de Campo</h2>
+                    <div class="form-section">
+                        <form id="formSaida" onsubmit="registrarSaida(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="materialSaida">Material</label>
+                                    <select id="materialSaida" required>
+                                        <option value="">Selecione o material</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="quantidadeSaida">Quantidade Saída</label>
+                                    <input type="number" id="quantidadeSaida" placeholder="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="tecnicianoSaida">Técnico</label>
+                                    <input type="text" id="tecnicianoSaida" placeholder="Nome do técnico" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="armarioSaida">Armário/Local</label>
+                                    <input type="text" id="armarioSaida" placeholder="Ex: I34, I35" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-register">✅ Registrar Saída</button>
+                        </form>
+                    </div>
+
+                    <h3 style="margin-top: 30px; margin-bottom: 15px;">Histórico de Saídas</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Técnico</th>
+                                    <th>Armário</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaSaidas"></tbody>
+                        </table>
+                        <div id="emptySaidas" class="empty-message">Nenhuma saída registrada</div>
+                    </div>
+                </div>
+
+                <!-- ENTRADAS -->
+                <div id="entradas" class="section">
+                    <h2>📥 Registrar Entrada/Devolução</h2>
+                    <div class="form-section">
+                        <form id="formEntrada" onsubmit="registrarEntrada(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="materialEntrada">Material</label>
+                                    <select id="materialEntrada" required>
+                                        <option value="">Selecione o material</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="quantidadeEntrada">Quantidade Entrada</label>
+                                    <input type="number" id="quantidadeEntrada" placeholder="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="tecnicianoEntrada">Técnico</label>
+                                    <input type="text" id="tecnicianoEntrada" placeholder="Nome do técnico" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="observacaoEntrada">Observação</label>
+                                    <input type="text" id="observacaoEntrada" placeholder="Devolução, reparo, etc">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-register">✅ Registrar Entrada</button>
+                        </form>
+                    </div>
+
+                    <h3 style="margin-top: 30px; margin-bottom: 15px;">Histórico de Entradas</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Técnico</th>
+                                    <th>Observação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaEntradas"></tbody>
+                        </table>
+                        <div id="emptyEntradas" class="empty-message">Nenhuma entrada registrada</div>
+                    </div>
+                </div>
+
+                <!-- REABASTECIMENTO CENTRAL (APENAS ADMIN) -->
+                <div id="reabastecimento" class="section">
+                    <h2>🏭 Reabastecimento da Central</h2>
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                        <p style="color: #155724; margin: 0;"><strong>🔒 Acesso Restrito:</strong> Apenas administrador pode registrar reabastecimento da central</p>
+                    </div>
+
+                    <div class="form-section">
+                        <form id="formReabastecimento" onsubmit="registrarReabastecimento(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="centralReab">🏭 Central</label>
+                                    <select id="centralReab" required>
+                                        <option value="">Selecione a central</option>
+                                        <option value="IND">IND - Industrial</option>
+                                        <option value="CAN">CAN - Canoas</option>
+                                        <option value="NYW">NYW - New York</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fornecedor">🏢 Fornecedor</label>
+                                    <input type="text" id="fornecedor" placeholder="Ex: Distribuidor XYZ" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="notaFiscal">📄 Nota Fiscal/Pedido</label>
+                                    <input type="text" id="notaFiscal" placeholder="Ex: NF-2024-001" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="materialReab">Material</label>
+                                    <select id="materialReab" required>
+                                        <option value="">Selecione o material</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="quantidadeReab">Quantidade Recebida</label>
+                                    <input type="number" id="quantidadeReab" placeholder="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="precoReab">💰 Preço Unitário (R$)</label>
+                                    <input type="number" id="precoReab" placeholder="0.00" step="0.01" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label for="observacaoReab">Observação</label>
+                                    <input type="text" id="observacaoReab" placeholder="Ex: Frete incluído, Urgente, etc">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-register">✅ Registrar Reabastecimento</button>
+                        </form>
+                    </div>
+
+                    <h3 style="margin-top: 30px; margin-bottom: 15px;">Histórico de Reabastecimentos</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Central</th>
+                                    <th>Fornecedor</th>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Total</th>
+                                    <th>NF/Pedido</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaReabastecimento"></tbody>
+                        </table>
+                        <div id="emptyReabastecimento" class="empty-message">Nenhum reabastecimento registrado</div>
+                    </div>
+                </div>
+
+                <!-- GERENCIAR USUÁRIOS (APENAS ADMIN) -->
+                <div id="usuarios" class="section">
+                    <h2>👥 Gerenciar Usuários</h2>
+                    <div style="background: #e7f3ff; border: 1px solid #b3d9ff; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                        <p style="color: #004085; margin: 0;"><strong>🔐 Acesso Restrito:</strong> Apenas administrador pode adicionar e gerenciar usuários do sistema</p>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 style="margin-bottom: 20px;">➕ Adicionar Novo Usuário</h3>
+                        <form id="formNovoUsuario" onsubmit="adicionarUsuario(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="novoLogin">👤 Login (Usuário)</label>
+                                    <input type="text" id="novoLogin" placeholder="Ex: carlos" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="novoNome">📝 Nome Completo</label>
+                                    <input type="text" id="novoNome" placeholder="Ex: Carlos Silva" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="novaSenha">🔑 Senha</label>
+                                    <input type="password" id="novaSenha" placeholder="Digite a senha" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="novaCentral">🏭 Central Atribuída</label>
+                                    <select id="novaCentral" required>
+                                        <option value="">Selecione a central</option>
+                                        <option value="IND">IND - Industrial</option>
+                                        <option value="CAN">CAN - Canoas</option>
+                                        <option value="NYW">NYW - New York</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-register">✅ Adicionar Usuário</button>
+                        </form>
+                    </div>
+
+                    <h3 style="margin-top: 30px; margin-bottom: 15px;">📋 Lista de Usuários</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Login</th>
+                                    <th>Nome</th>
+                                    <th>Central</th>
+                                    <th>Data Criação</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaUsuarios"></tbody>
+                        </table>
+                        <div id="emptyUsuarios" class="empty-message">Nenhum usuário registrado</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ===== DADOS MOCK (Simulação) =====
-        const materiaisDB = [
-            { id: 1, nome: 'Splitter 1:8', categoria: 'Splitter', unidade: 'un' },
-            { id: 2, nome: 'CTO 16 portas', categoria: 'CTOs', unidade: 'un' },
-            { id: 3, nome: 'Conector SC/APC', categoria: 'Conectores', unidade: 'pç' },
-            { id: 4, nome: 'Cabo Óptico 1km', categoria: 'Cabos', unidade: 'm' },
-            { id: 5, nome: 'Emenda Fusão', categoria: 'Emendas', unidade: 'un' }
-        ];
-
-        const estoqueMockDB = {
-            'ESTOQUE CENTRAL': {
-                'Splitter 1:8': { saldo: 45, minimo: 10 },
-                'CTO 16 portas': { saldo: 28, minimo: 5 },
-                'Conector SC/APC': { saldo: 150, minimo: 30 },
-                'Cabo Óptico 1km': { saldo: 8, minimo: 15 },
-                'Emenda Fusão': { saldo: 3, minimo: 10 }
-            },
-            'CARRO – João Silva': {
-                'Splitter 1:8': { saldo: 5, minimo: 2 },
-                'CTO 16 portas': { saldo: 2, minimo: 1 },
-                'Conector SC/APC': { saldo: 20, minimo: 5 },
-                'Cabo Óptico 1km': { saldo: 0, minimo: 2 },
-                'Emenda Fusão': { saldo: 1, minimo: 2 }
-            },
-            'CARRO – Matheus Costa': {
-                'Splitter 1:8': { saldo: 3, minimo: 2 },
-                'CTO 16 portas': { saldo: 1, minimo: 1 },
-                'Conector SC/APC': { saldo: 15, minimo: 5 },
-                'Cabo Óptico 1km': { saldo: 2, minimo: 2 },
-                'Emenda Fusão': { saldo: 0, minimo: 2 }
-            },
-            'CARRO – Pedro Santos': {
-                'Splitter 1:8': { saldo: 4, minimo: 2 },
-                'CTO 16 portas': { saldo: 3, minimo: 1 },
-                'Conector SC/APC': { saldo: 25, minimo: 5 },
-                'Cabo Óptico 1km': { saldo: 1, minimo: 2 },
-                'Emenda Fusão': { saldo: 2, minimo: 2 }
-            }
+        // ===== BANCO DE DADOS LOCAL =====
+        let usuariosDB = {
+            'joao': { senha: '1234', nome: 'João Silva', central: 'IND' },
+            'matheus': { senha: '1234', nome: 'Matheus Costa', central: 'CAN' },
+            'pedro': { senha: '1234', nome: 'Pedro Santos', central: 'NYW' },
+            'admin': { senha: 'admin123', nome: 'Administrador', central: 'ADM' }
         };
 
-        const reposicoesDB = [
-            { id: 1, material: 'Cabo Óptico 1km', local: 'CARRO – João Silva', saldo: 0, minimo: 2, qtdSugerida: 2, status: 'Novo', tecnico: 'João Silva' },
-            { id: 2, material: 'Emenda Fusão', local: 'CARRO – João Silva', saldo: 1, minimo: 2, qtdSugerida: 1, status: 'Separado', tecnico: 'João Silva' },
-            { id: 3, material: 'Emenda Fusão', local: 'CARRO – Matheus Costa', saldo: 0, minimo: 2, qtdSugerida: 2, status: 'Novo', tecnico: 'Matheus Costa' },
-            { id: 4, material: 'Cabo Óptico 1km', local: 'ESTOQUE CENTRAL', saldo: 8, minimo: 15, qtdSugerida: 7, status: 'Novo', tecnico: '' }
-        ];
+        let usuarioLogado = null;
+        let materiais = [];
+        let saidas = [];
+        let entradas = [];
+        let reabastecimentos = [];
 
-        const movimentacoesHistorico = [
-            { id: 1, tipo: 'Retirada', material: 'Splitter 1:8', quantidade: 2, origem: 'ESTOQUE CENTRAL', destino: 'CARRO – João Silva', tecnico: 'João Silva', data: '18/01/2026 10:30', evento: '' },
-            { id: 2, tipo: 'Consumo', material: 'Conector SC/APC', quantidade: 5, origem: 'CARRO – João Silva', destino: '', tecnico: 'João Silva', data: '18/01/2026 11:00', evento: '87654321' }
-        ];
+        // Carregar dados do localStorage
+        function carregarDados() {
+            const dados = localStorage.getItem('appDados');
+            if (dados) {
+                const parsed = JSON.parse(dados);
+                materiais = parsed.materiais || [];
+                saidas = parsed.saidas || [];
+                entradas = parsed.entradas || [];
+                reabastecimentos = parsed.reabastecimentos || [];
+            }
+        }
 
-        let cartRetirada = [];
-        let cartConsumo = [];
-        let usuarioLogado = 'Técnico Demo';
-
-        // ===== NAVEGAÇÃO =====
-        function goToView(viewName) {
-            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-            document.getElementById(viewName).classList.add('active');
-            window.scrollTo(0, 0);
+        // Salvar dados no localStorage
+        function salvarDados() {
+            localStorage.setItem('appDados', JSON.stringify({
+                materiais,
+                saidas,
+                entradas,
+                reabastecimentos
+            }));
         }
 
         // ===== LOGIN =====
+        function fazerLogin(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+            const alert = document.getElementById('loginAlert');
+
+            if (usuariosDB[usuario] && usuariosDB[usuario].senha === senha) {
+                usuarioLogado = { login: usuario, nome: usuariosDB[usuario].nome };
+                localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+                mostrarApp();
+                document.getElementById('usuarioNome').textContent = usuarioLogado.nome;
+                atualizarDashboard();
+                atualizarSelects();
+            } else {
+                alert.textContent = '❌ Usuário ou senha incorretos';
+                alert.classList.add('show');
+                setTimeout(() => alert.classList.remove('show'), 3000);
+            }
+        }
+
         function logout() {
-            alert('Você foi desconectado.');
-            usuarioLogado = 'Técnico Demo';
-            document.getElementById('username').textContent = usuarioLogado;
-            goToView('home');
-        }
-
-        // ===== RESUMO ESTOQUE NA HOME =====
-        function carregarResumoEstoque() {
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">';
-            
-            const statusCount = { verde: 0, amarelo: 0, vermelho: 0 };
-            for (let local in estoqueMockDB) {
-                for (let material in estoqueMockDB[local]) {
-                    const { saldo, minimo } = estoqueMockDB[local][material];
-                    if (saldo >= minimo) statusCount.verde++;
-                    else if (saldo >= minimo * 0.5) statusCount.amarelo++;
-                    else statusCount.vermelho++;
-                }
+            if (confirm('Deseja realmente sair?')) {
+                usuarioLogado = null;
+                localStorage.removeItem('usuarioLogado');
+                document.getElementById('login').style.display = 'flex';
+                document.getElementById('app').classList.remove('show');
+                document.getElementById('usuario').value = '';
+                document.getElementById('senha').value = '';
             }
-
-            html += `
-                <div style="background: rgba(40, 167, 69, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--success);">✅ OK</div>
-                    <div style="font-size: 1.5rem; font-weight: 600;">${statusCount.verde}</div>
-                </div>
-                <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: #cc7700;">⚠️ Aviso</div>
-                    <div style="font-size: 1.5rem; font-weight: 600;">${statusCount.amarelo}</div>
-                </div>
-                <div style="background: rgba(220, 53, 69, 0.1); border: 1px solid var(--danger); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--danger);">🔴 Crítico</div>
-                    <div style="font-size: 1.5rem; font-weight: 600;">${statusCount.vermelho}</div>
-                </div>
-            `;
-            
-            html += '</div>';
-            document.getElementById('resumoEstoque').innerHTML = html;
         }
 
-        // ===== RETIRADA =====
-        function adicionarItemRetirada() {
-            const tecnico = document.getElementById('tecnicoRetirada').value;
-            const material = document.getElementById('materialRetirada').value;
-            const quantidade = parseInt(document.getElementById('quantidadeRetirada').value);
-            const obs = document.getElementById('obsRetirada').value;
-
-            if (!tecnico || !material || quantidade <= 0) {
-                alert('⚠️ Preencha todos os campos obrigatórios!');
-                return;
+        function mostrarApp() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('app').classList.add('show');
+            // Mostrar menu admin apenas para admin
+            const navReab = document.getElementById('navReabastecimento');
+            const navUsr = document.getElementById('navUsuarios');
+            if (usuarioLogado.login === 'admin') {
+                navReab.style.display = 'block';
+                navUsr.style.display = 'block';
+            } else {
+                navReab.style.display = 'none';
+                navUsr.style.display = 'none';
             }
-
-            const saldoCentral = estoqueMockDB['ESTOQUE CENTRAL'][material].saldo;
-            if (quantidade > saldoCentral) {
-                alert(`⚠️ Estoque insuficiente no Central! (Disponível: ${saldoCentral})`);
-                return;
-            }
-
-            cartRetirada.push({ tecnico, material, quantidade, obs });
-            atualizarCartRetirada();
-            document.getElementById('quantidadeRetirada').value = 1;
-            document.getElementById('obsRetirada').value = '';
         }
 
-        function atualizarCartRetirada() {
-            const cart = document.getElementById('cartRetirada');
-            if (cartRetirada.length === 0) {
-                cart.innerHTML = '<div class="empty-cart">Nenhum item adicionado</div>';
-                return;
-            }
+        // ===== NAVEGAÇÃO =====
+        function mostrarSecao(secao) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(secao).classList.add('active');
+            event.target.classList.add('active');
 
-            let html = '';
-            cartRetirada.forEach((item, idx) => {
-                html += `
-                    <div class="cart-item">
-                        <div class="cart-item-info">
-                            <div class="cart-item-name">${item.material}</div>
-                            <div class="cart-item-qty">Quantidade: ${item.quantidade} un</div>
-                            ${item.obs ? `<div class="cart-item-qty">Obs: ${item.obs}</div>` : ''}
-                        </div>
-                        <div class="cart-item-actions">
-                            <button class="btn btn-danger btn-small" onclick="removerItemRetirada(${idx})">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            });
-            cart.innerHTML = html;
+            if (secao === 'listar') atualizarTabelaMateriais();
+            if (secao === 'saidas') atualizarTabelaSaidas();
+            if (secao === 'entradas') atualizarTabelaEntradas();
         }
 
-        function removerItemRetirada(idx) {
-            cartRetirada.splice(idx, 1);
-            atualizarCartRetirada();
-        }
-
-        function confirmarRetirada() {
-            if (cartRetirada.length === 0) {
-                alert('⚠️ Adicione itens à retirada!');
-                return;
-            }
-
-            let resumo = '✓ Retirada Confirmada:\n\n';
-            cartRetirada.forEach(item => {
-                resumo += `${item.material}: ${item.quantidade} un\n`;
-                estoqueMockDB['ESTOQUE CENTRAL'][item.material].saldo -= item.quantidade;
-                const carroTecnico = `CARRO – ${item.tecnico}`;
-                estoqueMockDB[carroTecnico][item.material].saldo += item.quantidade;
-
-                movimentacoesHistorico.push({
-                    id: movimentacoesHistorico.length + 1,
-                    tipo: 'Retirada',
-                    material: item.material,
-                    quantidade: item.quantidade,
-                    origem: 'ESTOQUE CENTRAL',
-                    destino: carroTecnico,
-                    tecnico: item.tecnico,
-                    data: new Date().toLocaleString('pt-BR'),
-                    evento: ''
-                });
-            });
-
-            alert(resumo);
-            cartRetirada = [];
-            atualizarCartRetirada();
-            carregarResumoEstoque();
-            goToView('home');
-        }
-
-        function limparCarrinho(tipo) {
-            if (tipo === 'retirada') cartRetirada = [];
-            else cartConsumo = [];
-            atualizarCartRetirada();
-            atualizarCartConsumo();
-        }
-
-        // ===== CONSUMO =====
-        function validarEvento() {
-            const eventoID = document.getElementById('eventoID').value.trim();
-            
-            if (!eventoID) {
-                document.getElementById('alertValidacao').innerHTML = '<div class="alert alert-danger">⚠️ Digite um ID de evento!</div>';
-                document.getElementById('eventoDados').style.display = 'none';
-                return;
-            }
-
-            // INTEGRAÇÃO COM SIGMA/FSP via Power Automate
-            // Para este demo, simulamos resposta
-            const eventosSimulados = {
-                '87654321': { id: '87654321', cluster: 'PORTO ALEGRE', status: 'Em progresso' },
-                '12345678': { id: '12345678', cluster: 'CANOAS', status: 'Aberto' },
-                '99999999': { id: '99999999', cluster: 'NOVO HAMBURGO', status: 'Concluído' }
+        // ===== REGISTRO DE MATERIAL =====
+        function registrarMaterial(e) {
+            e.preventDefault();
+            const material = {
+                id: Date.now(),
+                categoria: document.getElementById('categoria').value,
+                modelo: document.getElementById('modelo').value,
+                codigo: document.getElementById('codigo').value,
+                serie: document.getElementById('serie').value,
+                lote: document.getElementById('lote').value,
+                preco: parseFloat(document.getElementById('preco').value),
+                quantidade: parseInt(document.getElementById('quantidade').value),
+                localizacao: document.getElementById('localizacao').value,
+                dataCadastro: new Date().toLocaleDateString('pt-BR')
             };
 
-            if (eventosSimulados[eventoID]) {
-                const evento = eventosSimulados[eventoID];
-                document.getElementById('alertValidacao').innerHTML = '<div class="alert alert-success">✅ Evento validado com sucesso!</div>';
-                document.getElementById('eventoDadosID').textContent = evento.id;
-                document.getElementById('eventoDadosCluster').textContent = evento.cluster;
-                document.getElementById('eventoDadosStatus').textContent = evento.status;
-                document.getElementById('eventoDados').style.display = 'block';
-            } else {
-                document.getElementById('alertValidacao').innerHTML = '<div class="alert alert-danger">❌ Evento não encontrado. Verifique o ID.</div>';
-                document.getElementById('eventoDados').style.display = 'none';
-            }
+            materiais.push(material);
+            salvarDados();
+            document.getElementById('formRegistro').reset();
+            alert('✅ Material registrado com sucesso!');
+            atualizarDashboard();
+            atualizarSelects();
         }
 
-        function adicionarItemConsumo() {
-            const eventoID = document.getElementById('eventoID').value.trim();
-            const material = document.getElementById('materialConsumo').value;
-            const quantidade = parseInt(document.getElementById('quantidadeConsumo').value);
-            const obs = document.getElementById('obsConsumo').value;
+        function atualizarTabelaMateriais() {
+            const tbody = document.getElementById('tabelaMateriais');
+            const empty = document.getElementById('emptyMateriais');
 
-            if (!eventoID || !material || quantidade <= 0) {
-                alert('⚠️ Preencha todos os campos obrigatórios!');
+            tbody.innerHTML = '';
+
+            if (materiais.length === 0) {
+                empty.style.display = 'block';
                 return;
             }
 
-            cartConsumo.push({ eventoID, material, quantidade, obs });
-            atualizarCartConsumo();
-            document.getElementById('quantidadeConsumo').value = 1;
-            document.getElementById('obsConsumo').value = '';
+            empty.style.display = 'none';
+
+            materiais.forEach(m => {
+                const total = (m.preco * m.quantidade).toFixed(2);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${m.categoria}</td>
+                    <td>${m.modelo}</td>
+                    <td>${m.codigo}</td>
+                    <td>${m.serie || '-'}</td>
+                    <td>${m.quantidade}</td>
+                    <td>R$ ${m.preco.toFixed(2)}</td>
+                    <td>R$ ${total}</td>
+                    <td>${m.localizacao}</td>
+                    <td><button class="btn-delete" onclick="deletarMaterial(${m.id})">🗑️ Deletar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        function atualizarCartConsumo() {
-            const cart = document.getElementById('cartConsumo');
-            if (cartConsumo.length === 0) {
-                cart.innerHTML = '<div class="empty-cart">Nenhum item adicionado</div>';
+        function deletarMaterial(id) {
+            if (confirm('Deseja deletar este material?')) {
+                materiais = materiais.filter(m => m.id !== id);
+                salvarDados();
+                atualizarTabelaMateriais();
+                atualizarDashboard();
+                atualizarSelects();
+            }
+        }
+
+        // ===== SAÍDAS =====
+        function registrarSaida(e) {
+            e.preventDefault();
+            const materialId = parseInt(document.getElementById('materialSaida').value);
+            const quantidade = parseInt(document.getElementById('quantidadeSaida').value);
+            const material = materiais.find(m => m.id === materialId);
+
+            if (!material || quantidade > material.quantidade) {
+                alert('❌ Quantidade insuficiente em estoque');
                 return;
             }
 
-            let html = '';
-            cartConsumo.forEach((item, idx) => {
-                html += `
-                    <div class="cart-item">
-                        <div class="cart-item-info">
-                            <div class="cart-item-name">${item.material}</div>
-                            <div class="cart-item-qty">Evento: ${item.eventoID}</div>
-                            <div class="cart-item-qty">Quantidade: ${item.quantidade}</div>
-                            ${item.obs ? `<div class="cart-item-qty">Obs: ${item.obs}</div>` : ''}
-                        </div>
-                        <div class="cart-item-actions">
-                            <button class="btn btn-danger btn-small" onclick="removerItemConsumo(${idx})">🗑️</button>
-                        </div>
-                    </div>
-                `;
+            material.quantidade -= quantidade;
+            saidas.push({
+                id: Date.now(),
+                materialId,
+                materialNome: material.modelo,
+                quantidade,
+                tecnico: document.getElementById('tecnicianoSaida').value,
+                armario: document.getElementById('armarioSaida').value,
+                data: new Date().toLocaleDateString('pt-BR')
             });
-            cart.innerHTML = html;
+
+            salvarDados();
+            document.getElementById('formSaida').reset();
+            alert('✅ Saída registrada com sucesso!');
+            atualizarDashboard();
+            atualizarSelects();
         }
 
-        function removerItemConsumo(idx) {
-            cartConsumo.splice(idx, 1);
-            atualizarCartConsumo();
-        }
+        function atualizarTabelaSaidas() {
+            const tbody = document.getElementById('tabelaSaidas');
+            const empty = document.getElementById('emptySaidas');
 
-        function confirmarConsumo() {
-            if (cartConsumo.length === 0) {
-                alert('⚠️ Adicione itens ao consumo!');
+            tbody.innerHTML = '';
+
+            if (saidas.length === 0) {
+                empty.style.display = 'block';
                 return;
             }
 
-            let resumo = '✓ Consumo Confirmado:\n\n';
-            cartConsumo.forEach(item => {
-                resumo += `${item.material}: ${item.quantidade} un (Evento: ${item.eventoID})\n`;
-                
-                // Buscar o carro do técnico logado (aqui simulamos João Silva)
-                const carroTecnico = 'CARRO – João Silva'; // Em produção, viria do usuário logado
-                const saldoCarro = estoqueMockDB[carroTecnico][item.material].saldo;
-                
-                if (item.quantidade > saldoCarro) {
-                    alert(`⚠️ Saldo insuficiente no carro! (Disponível: ${saldoCarro})`);
-                    return;
-                }
+            empty.style.display = 'none';
 
-                estoqueMockDB[carroTecnico][item.material].saldo -= item.quantidade;
-
-                movimentacoesHistorico.push({
-                    id: movimentacoesHistorico.length + 1,
-                    tipo: 'Consumo',
-                    material: item.material,
-                    quantidade: item.quantidade,
-                    origem: carroTecnico,
-                    destino: '',
-                    tecnico: 'João Silva',
-                    data: new Date().toLocaleString('pt-BR'),
-                    evento: item.eventoID
-                });
+            saidas.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.data}</td>
+                    <td>${s.materialNome}</td>
+                    <td>${s.quantidade}</td>
+                    <td>${s.tecnico}</td>
+                    <td>${s.armario}</td>
+                `;
+                tbody.appendChild(tr);
             });
-
-            alert(resumo + '\n✅ Dados sincronizados com SIGMA/FSP!');
-            cartConsumo = [];
-            atualizarCartConsumo();
-            document.getElementById('eventoID').value = '';
-            document.getElementById('eventoDados').style.display = 'none';
-            document.getElementById('alertValidacao').innerHTML = '';
-            carregarResumoEstoque();
-            goToView('home');
         }
 
-        // ===== MEU ESTOQUE =====
-        function carregarMeuEstoque() {
-            const tecnico = document.getElementById('tecnicoEstoque').value;
-            if (!tecnico) return;
+        // ===== ENTRADAS =====
+        function registrarEntrada(e) {
+            e.preventDefault();
+            const materialId = parseInt(document.getElementById('materialEntrada').value);
+            const quantidade = parseInt(document.getElementById('quantidadeEntrada').value);
+            const material = materiais.find(m => m.id === materialId);
 
-            const carroTecnico = `CARRO – ${tecnico}`;
-            const estoque = estoqueMockDB[carroTecnico];
-            const tbody = document.getElementById('tabelaMeuEstoque');
-            let html = '';
-
-            for (let material in estoque) {
-                const { saldo, minimo } = estoque[material];
-                let status = '';
-                let badge = '';
-
-                if (saldo >= minimo) {
-                    status = '✅ OK';
-                    badge = 'badge-success';
-                } else if (saldo >= minimo * 0.5) {
-                    status = '⚠️ Aviso';
-                    badge = 'badge-warning';
-                } else {
-                    status = '🔴 Crítico';
-                    badge = 'badge-danger';
-                }
-
-                html += `
-                    <tr>
-                        <td>${material}</td>
-                        <td><strong>${saldo}</strong></td>
-                        <td>${minimo}</td>
-                        <td><span class="badge ${badge}">${status}</span></td>
-                    </tr>
-                `;
+            if (!material) {
+                alert('❌ Material não encontrado');
+                return;
             }
 
-            tbody.innerHTML = html;
-        }
-
-        // ===== REPOSIÇÕES (KANBAN) =====
-        function carregarReposicoes() {
-            const statusCounts = { 'Novo': 0, 'Separado': 0, 'Retirado': 0, 'Concluído': 0 };
-            const kanbanDados = { 'Novo': '', 'Separado': '', 'Retirado': '', 'Concluído': '' };
-
-            reposicoesDB.forEach(rep => {
-                statusCounts[rep.status]++;
-                const card = `
-                    <div class="kanban-card">
-                        <h4>${rep.material}</h4>
-                        <div class="kanban-card-info">
-                            <div>📍 ${rep.local}</div>
-                            <div>Saldo: ${rep.saldo} | Mínimo: ${rep.minimo}</div>
-                            <div>Sugestão: ${rep.qtdSugerida}</div>
-                        </div>
-                        <div class="kanban-card-actions">
-                            ${rep.status === 'Novo' ? `<button class="btn btn-primary btn-small" onclick="mudarStatus(${rep.id}, 'Separado')">Separado</button>` : ''}
-                            ${rep.status === 'Separado' ? `<button class="btn btn-warning btn-small" onclick="mudarStatus(${rep.id}, 'Retirado')">Retirado</button>` : ''}
-                            ${rep.status === 'Retirado' ? `<button class="btn btn-success btn-small" onclick="mudarStatus(${rep.id}, 'Concluído')">✓ Concluído</button>` : ''}
-                        </div>
-                    </div>
-                `;
-                kanbanDados[rep.status] += card;
+            material.quantidade += quantidade;
+            entradas.push({
+                id: Date.now(),
+                materialId,
+                materialNome: material.modelo,
+                quantidade,
+                tecnico: document.getElementById('tecnicianoEntrada').value,
+                observacao: document.getElementById('observacaoEntrada').value,
+                data: new Date().toLocaleDateString('pt-BR')
             });
 
-            document.getElementById('countNovo').textContent = statusCounts['Novo'];
-            document.getElementById('countSeparado').textContent = statusCounts['Separado'];
-            document.getElementById('countRetirado').textContent = statusCounts['Retirado'];
-            document.getElementById('countConcluido').textContent = statusCounts['Concluído'];
-
-            document.getElementById('kanbanNovo').innerHTML = kanbanDados['Novo'] || '<div class="empty-cart">Nenhum item</div>';
-            document.getElementById('kanbanSeparado').innerHTML = kanbanDados['Separado'] || '<div class="empty-cart">Nenhum item</div>';
-            document.getElementById('kanbanRetirado').innerHTML = kanbanDados['Retirado'] || '<div class="empty-cart">Nenhum item</div>';
-            document.getElementById('kanbanConcluido').innerHTML = kanbanDados['Concluído'] || '<div class="empty-cart">Nenhum item</div>';
+            salvarDados();
+            document.getElementById('formEntrada').reset();
+            alert('✅ Entrada registrada com sucesso!');
+            atualizarDashboard();
+            atualizarSelects();
         }
 
-        function mudarStatus(repId, novoStatus) {
-            const rep = reposicoesDB.find(r => r.id === repId);
-            if (rep) {
-                rep.status = novoStatus;
-                carregarReposicoes();
-                alert(`✅ Reposição movida para "${novoStatus}"`);
+        function atualizarTabelaEntradas() {
+            const tbody = document.getElementById('tabelaEntradas');
+            const empty = document.getElementById('emptyEntradas');
+
+            tbody.innerHTML = '';
+
+            if (entradas.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+
+            entradas.forEach(e => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${e.data}</td>
+                    <td>${e.materialNome}</td>
+                    <td>${e.quantidade}</td>
+                    <td>${e.tecnico}</td>
+                    <td>${e.observacao || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ===== DASHBOARD =====
+        function atualizarDashboard() {
+            const total = materiais.length;
+            const valor = materiais.reduce((acc, m) => acc + (m.preco * m.quantidade), 0);
+            
+            document.getElementById('totalMateriais').textContent = total;
+            document.getElementById('valorTotal').textContent = 'R$ ' + valor.toFixed(2);
+            document.getElementById('totalSaidas').textContent = saidas.length;
+            document.getElementById('totalEntradas').textContent = entradas.length;
+        }
+
+        // ===== SELECTS =====
+        function atualizarSelects() {
+            const selectSaida = document.getElementById('materialSaida');
+            const selectEntrada = document.getElementById('materialEntrada');
+            const selectReab = document.getElementById('materialReab');
+
+            selectSaida.innerHTML = '<option value="">Selecione o material</option>';
+            selectEntrada.innerHTML = '<option value="">Selecione o material</option>';
+            selectReab.innerHTML = '<option value="">Selecione o material</option>';
+
+            materiais.forEach(m => {
+                const opt1 = document.createElement('option');
+                opt1.value = m.id;
+                opt1.textContent = `${m.modelo} (${m.quantidade} em estoque)`;
+                selectSaida.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = m.id;
+                opt2.textContent = `${m.modelo} (${m.quantidade} em estoque)`;
+                selectEntrada.appendChild(opt2);
+
+                const opt3 = document.createElement('option');
+                opt3.value = m.id;
+                opt3.textContent = `${m.modelo}`;
+                selectReab.appendChild(opt3);
+            });
+        }
+
+        // ===== REABASTECIMENTO CENTRAL =====
+        function registrarReabastecimento(e) {
+            e.preventDefault();
+            
+            // Verificar se é admin
+            if (usuarioLogado.login !== 'admin') {
+                alert('❌ Acesso negado! Apenas administrador pode registrar reabastecimento');
+                return;
+            }
+
+            const central = document.getElementById('centralReab').value;
+            const materialId = parseInt(document.getElementById('materialReab').value);
+            const quantidade = parseInt(document.getElementById('quantidadeReab').value);
+            const preco = parseFloat(document.getElementById('precoReab').value);
+            const material = materiais.find(m => m.id === materialId);
+
+            if (!material) {
+                alert('❌ Material não encontrado');
+                return;
+            }
+
+            material.quantidade += quantidade;
+            material.preco = preco; // Atualizar preço se mudou
+
+            reabastecimentos.push({
+                id: Date.now(),
+                central,
+                materialId,
+                materialNome: material.modelo,
+                quantidade,
+                preco,
+                total: (quantidade * preco).toFixed(2),
+                fornecedor: document.getElementById('fornecedor').value,
+                notaFiscal: document.getElementById('notaFiscal').value,
+                observacao: document.getElementById('observacaoReab').value,
+                data: new Date().toLocaleDateString('pt-BR'),
+                admin: usuarioLogado.nome
+            });
+
+            salvarDados();
+            document.getElementById('formReabastecimento').reset();
+            alert('✅ Reabastecimento registrado com sucesso!');
+            atualizarDashboard();
+            atualizarSelects();
+            atualizarTabelaReabastecimento();
+        }
+
+        function atualizarTabelaReabastecimento() {
+            const tbody = document.getElementById('tabelaReabastecimento');
+            const empty = document.getElementById('emptyReabastecimento');
+
+            tbody.innerHTML = '';
+
+            if (reabastecimentos.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+
+            reabastecimentos.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.data}</td>
+                    <td>${r.central}</td>
+                    <td>${r.fornecedor}</td>
+                    <td>${r.materialNome}</td>
+                    <td>${r.quantidade}</td>
+                    <td>R$ ${r.preco.toFixed(2)}</td>
+                    <td>R$ ${r.total}</td>
+                    <td>${r.notaFiscal}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ===== GERENCIAR USUÁRIOS =====
+        function adicionarUsuario(e) {
+            e.preventDefault();
+
+            // Verificar se é admin
+            if (usuarioLogado.login !== 'admin') {
+                alert('❌ Acesso negado! Apenas administrador pode adicionar usuários');
+                return;
+            }
+
+            const login = document.getElementById('novoLogin').value.toLowerCase();
+            const nome = document.getElementById('novoNome').value;
+            const senha = document.getElementById('novaSenha').value;
+            const central = document.getElementById('novaCentral').value;
+
+            // Validar se login já existe
+            if (usuariosDB[login]) {
+                alert('❌ Este login já existe! Escolha outro');
+                return;
+            }
+
+            // Validar força da senha
+            if (senha.length < 4) {
+                alert('❌ A senha deve ter no mínimo 4 caracteres');
+                return;
+            }
+
+            // Adicionar novo usuário
+            usuariosDB[login] = {
+                senha,
+                nome,
+                central,
+                dataCriacao: new Date().toLocaleDateString('pt-BR')
+            };
+
+            salvarDados();
+            document.getElementById('formNovoUsuario').reset();
+            alert(`✅ Usuário "${login}" adicionado com sucesso!`);
+            atualizarTabelaUsuarios();
+        }
+
+        function atualizarTabelaUsuarios() {
+            const tbody = document.getElementById('tabelaUsuarios');
+            const empty = document.getElementById('emptyUsuarios');
+
+            tbody.innerHTML = '';
+
+            const usuarios = Object.entries(usuariosDB);
+
+            if (usuarios.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+
+            usuarios.forEach(([login, dados]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${login}</strong></td>
+                    <td>${dados.nome}</td>
+                    <td>${dados.central}</td>
+                    <td>${dados.dataCriacao || 'Sistema'}</td>
+                    <td>
+                        ${login !== 'admin' ? `<button class="btn-delete" onclick="deletarUsuario('${login}')">🗑️ Deletar</button>` : '<span style="color: #999;">Protegido</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deletarUsuario(login) {
+            if (login === 'admin') {
+                alert('❌ Não é possível deletar o usuário administrador');
+                return;
+            }
+
+            if (confirm(`Deseja realmente deletar o usuário "${login}"?`)) {
+                delete usuariosDB[login];
+                salvarDados();
+                atualizarTabelaUsuarios();
+                alert(`✅ Usuário "${login}" deletado com sucesso!`);
             }
         }
 
-        // ===== MODAL =====
-        function closeModal() {
-            document.getElementById('confirmModal').classList.remove('active');
-        }
-
-        // ===== INIT =====
+        // ===== INICIALIZAÇÃO =====
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('username').textContent = usuarioLogado;
-            carregarResumoEstoque();
-            carregarReposicoes();
+            carregarDados();
+            const usuarioArmazenado = localStorage.getItem('usuarioLogado');
+            if (usuarioArmazenado) {
+                usuarioLogado = JSON.parse(usuarioArmazenado);
+                document.getElementById('usuarioNome').textContent = usuarioLogado.nome;
+                mostrarApp();
+                atualizarDashboard();
+                atualizarSelects();
+                atualizarTabelaUsuarios();
+            }
         });
     </script>
 </body>
