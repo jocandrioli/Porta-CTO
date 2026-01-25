@@ -267,11 +267,38 @@ function renderField(field) {
     buildDatalist(listId, values);
     return `<div><label for="${safeId}_input">${safeLabel}</label><div class="tags-wrap" id="${safeId}_wrap"><div class="chips" id="${safeId}_chips"></div><div class="tags-row"><input type="text" id="${safeId}_input" list="${escapeHtml(listId)}" ${ph} /><button type="button" id="${safeId}_add" class="btn-copy btn-add">Adicionar</button></div></div><input type="hidden" id="${safeId}" value="" /></div>`;
   }
-  if (type === "materials") {
-    const materialsData = SCHEMA.lists.materials || [];
-    const listId = `${id}_datalist`;
-    return `<div><label>${safeLabel}</label><div class="materials-wrap" id="${safeId}_wrap"><div class="materials-list" id="${safeId}_list"><p class="materials-empty">Nenhum material adicionado</p></div><div class="materials-add"><input type="text" id="${safeId}_search" list="${listId}" placeholder="Digite para buscar material..." style="flex:1;min-width:200px;padding:8px;border:1px solid var(--border-2);border-radius:4px;font-size:12px"><datalist id="${listId}">${materialsData.map(m => `<option value="${escapeHtml(m.name)}" data-unit="${escapeHtml(m.unit)}" data-code="${escapeHtml(m.code)}">${escapeHtml(m.code)} - ${escapeHtml(m.name)}</option>`).join("")}</datalist><input type="number" id="${safeId}_qty" placeholder="Qtd" min="0.1" step="0.1"><button type="button" id="${safeId}_add_btn" class="btn-copy btn-add">Adicionar</button></div></div><input type="hidden" id="${safeId}" value="[]" /></div>`;
-  }
+
+if (type === "materials") {
+  const materialsData = [...(SCHEMA.lists.materials || [])].sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", "pt-BR", { sensitivity: "base" })
+  );
+
+  const listId = `${id}_datalist`;
+
+  return `<div>
+    <label>${safeLabel}</label>
+    <div class="materials-wrap" id="${safeId}_wrap">
+      <div class="materials-list" id="${safeId}_list">
+        <p class="materials-empty">Nenhum material adicionado</p>
+      </div>
+
+      <div class="materials-add">
+        <input type="text" id="${safeId}_search" list="${listId}"
+          placeholder="Digite para buscar material..." 
+          style="flex:1;min-width:200px;padding:8px;border:1px solid var(--border-2);border-radius:4px;font-size:12px">
+
+        <datalist id="${listId}">
+          ${materialsData.map(m => `<option value="${escapeHtml(m.name)}"></option>`).join("")}
+        </datalist>
+
+        <input type="number" id="${safeId}_qty" placeholder="Qtd" min="0.1" step="0.1">
+        <button type="button" id="${safeId}_add_btn" class="btn-copy btn-add">Adicionar</button>
+      </div>
+    </div>
+    <input type="hidden" id="${safeId}" value="[]" />
+  </div>`;
+}
+
   const inputType = escapeHtml(type || "text");
   return `<div><label for="${safeId}">${safeLabel}</label><input type="${inputType}" id="${safeId}" ${ph} ${val} ${ro} ${im} ${st} /></div>`;
 }
