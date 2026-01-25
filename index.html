@@ -381,66 +381,122 @@ function initTagsField(fieldId, { delimiter = " / " } = {}) {
   syncHidden(); render();
 }
 
+
 function initMaterialsField(fieldId) {
-  const searchInput = document.getElementById(`${fieldId}_search`), qty = document.getElementById(`${fieldId}_qty`), addBtn = document.getElementById(`${fieldId}_add_btn`), list = document.getElementById(`${fieldId}_list`), hidden = document.getElementById(fieldId);
+  const searchInput = document.getElementById(`${fieldId}_search`);
+  const qty = document.getElementById(`${fieldId}_qty`);
+  const addBtn = document.getElementById(`${fieldId}_add_btn`);
+  const list = document.getElementById(`${fieldId}_list`);
+  const hidden = document.getElementById(fieldId);
+
   if (!searchInput || !qty || !addBtn || !list || !hidden) return;
+
   const state = { items: [] };
+
   const syncHidden = () => { hidden.value = JSON.stringify(state.items); };
+
   const render = () => {
     list.innerHTML = "";
-    if (state.items.length === 0) { list.innerHTML = `<p class="materials-empty">Nenhum material adicionado</p>`; return; }
+
+    if (state.items.length === 0) {
+      list.innerHTML = `<p class="materials-empty">Nenhum material adicionado</p>`;
+      return;
+    }
+
     const table = document.createElement("table");
 
-const header = table.insertRow();
-["Material", "Qtd", "Un", ""].forEach(text => {
-  const th = document.createElement("th");
-  th.textContent = text;
-  header.appendChild(th);
-});
+    // Cabeçalho (SEM coluna Código)
+    const header = table.insertRow();
+    ["Material", "Qtd", "Un", ""].forEach(text => {
+      const th = document.createElement("th");
+      th.textContent = text;
+      header.appendChild(th);
+    });
 
-state.items.forEach((item, idx) => {
-  const row = table.insertRow();
+    // Linhas
+    state.items.forEach((item, idx) => {
+      const row = table.insertRow();
 
-  const cell1 = row.insertCell(); cell1.textContent = item.name;
-  const cell2 = row.insertCell(); cell2.textContent = item.quantity;
-  const cell3 = row.insertCell(); cell3.textContent = item.unit;
+      const c1 = row.insertCell(); c1.textContent = item.name;
+      const c2 = row.insertCell(); c2.textContent = item.quantity;
+      const c3 = row.insertCell(); c3.textContent = item.unit;
 
-  const cell4 = row.insertCell();
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.textContent = "✕";
-  btn.style.background = "transparent";
-  btn.style.border = "none";
-  btn.style.cursor = "pointer";
-  btn.style.color = "var(--accent)";
-  btn.style.fontWeight = "700";
-  btn.addEventListener("click", () => {
-    state.items.splice(idx, 1);
-    syncHidden();
-    render();
-  });
+      const c4 = row.insertCell();
+      c4.style.textAlign = "center";
 
-  cell4.appendChild(btn);
-  cell4.style.textAlign = "center";
-});
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "✕";
+      btn.style.background = "transparent";
+      btn.style.border = "none";
+      btn.style.cursor = "pointer";
+      btn.style.color = "var(--accent)";
+      btn.style.fontWeight = "700";
+
+      btn.addEventListener("click", () => {
+        state.items.splice(idx, 1);
+        syncHidden();
+        render();
+      });
+
+      c4.appendChild(btn);
+    });
+
+    // ✅ FALTAVA ISTO no seu trecho
+    list.appendChild(table);
+  };
 
   const addMaterial = () => {
-    const materialName = searchInput.value.trim(); const quantity = parseFloat(qty.value);
-    if (!materialName || !quantity || quantity <= 0) { alert("Digite um material e informe a quantidade válida"); return; }
-    
-const materialData =
-  SCHEMA.lists.materials.find(m => m.name === materialName) ||
-  SCHEMA.lists.materials.find(m => m.code === materialName);
+    const materialKey = searchInput.value.trim();
+    const quantity = parseFloat(qty.value);
 
-    if (!materialData) { alert("Material não encontrado. Selecione da lista."); return; }
-    state.items.push({ name: materialData.name, quantity: quantity, unit: materialData.unit, code: materialData.code });
-    searchInput.value = ""; qty.value = ""; syncHidden(); render(); searchInput.focus();
+    if (!materialKey || !quantity || quantity <= 0) {
+      alert("Digite um material e informe a quantidade válida");
+      return;
+    }
+
+    // ✅ aceita buscar por NOME ou por CÓDIGO
+    const materialData =
+      SCHEMA.lists.materials.find(m => m.name === materialKey) ||
+      SCHEMA.lists.materials.find(m => m.code === materialKey);
+
+    if (!materialData) {
+      alert("Material não encontrado. Selecione da lista.");
+      return;
+    }
+
+    state.items.push({
+      name: materialData.name,
+      quantity: quantity,
+      unit: materialData.unit,
+      code: materialData.code // mantém para o STAMP
+    });
+
+    searchInput.value = "";
+    qty.value = "";
+    syncHidden();
+    render();
+    searchInput.focus();
   };
+
   addBtn.addEventListener("click", addMaterial);
-  qty.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addMaterial(); } });
-  hidden.__clearMaterials = () => { state.items = []; syncHidden(); render(); };
-  syncHidden(); render();
+  qty.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addMaterial();
+    }
+  });
+
+  hidden.__clearMaterials = () => {
+    state.items = [];
+    syncHidden();
+    render();
+  };
+
+  syncHidden();
+  render();
 }
+
 
 async function copyToClipboard() {
   const text = $("outputText").textContent || "";
