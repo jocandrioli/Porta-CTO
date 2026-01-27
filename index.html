@@ -556,4 +556,417 @@ function clearTypeFields(typeDef) {
   if (!typeDef) return;
   for (const f of typeDef.fields) {
     if (!!f.readonly) continue;
+    if (f.type === "radio") { const nm = f.name || f.id; document.querySelectorAll(`input[name="${CSS.escape(nm)}"]`).forEach(r => r.checked = false); continue; }
+    const el = $(f.id);
+    if (!el) continue;
+    if (f.type === "materials") { el.value = "[]"; el.__clearMaterials && el.__clearMaterials(); continue; }
+    if (f.type === "tags") { el.value = ""; el.__clearTags && el.__clearTags(); continue; }
+    if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+  }
+  hideOutput();
+}
 
+// ====== Busca de Endereço (sugestões + histórico) ======
+const CIDADES_PADRAO = [
+  "ALVORADA","CACHOEIRINHA","CAMPO BOM","CANOAS","CAPAO DA CANOA","CHARQUEADAS","DOIS IRMAOS","ESTANCIA VELHA",
+  "ESTEIO","GRAVATAI","GUAIBA","IGREJINHA","IVOTI","NOVO HAMBURGO","OSORIO","PORTO ALEGRE","SAO LEOPOLDO",
+  "TAQUARA","TORRES","TRAMANDAI","VIAMAO","XANGRI LA"
+];
+const PREFIXOS_VIA = ["Rua", "Av.", "Avenida", "Travessa", "Estrada", "Rodovia", "R.", "Alameda", "Largo"];
+const ADDRESS_DB = [
+  // Adicione aqui endereços favoritos/frequentes
+];
+const ADR_HIST_KEY = "adr_hist";
+function getAdrHistory() { try { return JSON.parse(localStorage.getItem(ADR_HIST_KEY) || "[]"); } catch { return []; } }
+function pushAdrHistory(addr) { const a=(addr||"").trim(); if(!a) return; const hist=getAdrHistory().filter(x=>x!==a); hist.unshift(a); localStorage.setItem(ADR_HIST_KEY, JSON.stringify(hist.slice(0,50))); }
+function buildAddressSuggestions(query){
+  const q=(query||"").trim().toLowerCase();
+  const hist=getAdrHistory();
+  const base=ADDRESS_DB.slice();
+  const starter = (!q ? PREFIXOS_VIA.map(p => p+" ") : []);
+  const match = (arr)=>arr.filter(x=>x.toLowerCase().includes(q));
+  const final=[...starter, ...match(hist), ...match(base)].filter((v,i,self)=>self.indexOf(v)===i);
+  if(q && !q.includes("porto alegre") && !/ - [A-Za-zÀ-ú\s]+$/.test(q)){
+    final.push((query||"").replace(/\s*$/, "") + " - Porto Alegre");
+  }
+  return final.slice(0,20);
+}
+function attachAddressSuggest(inputId){
+  const input=document.getElementById(inputId);
+  if(!input) return;
+  const wrap=document.createElement("div");
+  wrap.className="suggest-box";
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(input);
+  const tools=document.createElement("div");
+  tools.style.display="flex"; tools.style.justifyContent="space-between"; tools.style.gap="8px"; tools.style.marginTop="6px";
+  const btnMaps=document.createElement("button");
+  btnMaps.type="button"; btnMaps.className="btn-copy"; btnMaps.style.padding="6px 10px"; btnMaps.textContent="🔎 Buscar no mapa";
+  btnMaps.addEventListener("click", ()=>{ const q=input.value||""; if(!q.trim()) return alert("Digite um endereço para pesquisar no mapa."); window.open("https://www.google.com/maps/search/"+encodeURIComponent(q), "_blank"); });
+  tools.appendChild(btnMaps);
+  wrap.appendChild(tools);
+  const list=document.createElement("div");
+  list.className="suggest-list";
+  wrap.appendChild(list);
+  let idx=-1;
+  function renderList(items){
+    list.innerHTML=""; idx=-1;
+    if(!items || !items.length){ const muted=document.createElement("div"); muted.className="suggest-muted"; muted.textContent="Sem sugestões"; list.appendChild(muted); list.classList.add("show"); return; }
+    items.forEach((text,i)=>{ const item=document.createElement("div"); item.className="suggest-item"; item.textContent=text; item.addEventListener("click",()=>{ input.value=text; pushAdrHistory(text); list.classList.remove("show"); }); list.appendChild(item); });
+    list.classList.add("show");
+  }
+  function update(){ const items=buildAddressSuggestions(input.value); renderList(items); }
+  input.addEventListener("input", update);
+  input.addEventListener("focus", update);
+  input.addEventListener("keydown", (e)=>{
+    const items=Array.from(list.querySelectorAll(".suggest-item")); if(!items.length) return;
+    if(e.key==="ArrowDown"){ e.preventDefault(); idx=(idx+1)%items.length; items.forEach(el=>el.style.background=""); items[idx].style.background="#f6faff"; items[idx].scrollIntoView({block:"nearest"}); }
+    else if(e.key==="ArrowUp"){ e.preventDefault(); idx=(idx>0?idx-1:items.length-1); items.forEach(el=>el.style.background=""); items[idx].style.background="#f6faff"; items[idx].scrollIntoView({block:"nearest"}); }
+    else if(e.key==="Enter"){ if(idx>=0 && idx<items.length){ e.preventDefault(); const val=items[idx].textContent; input.value=val; pushAdrHistory(val); list.classList.remove("show"); } else { pushAdrHistory(input.value); } }
+    else if(e.key==="Escape"){ list.classList.remove("show"); }
+  });
+  document.addEventListener("click", (ev)=>{ if(!wrap.contains(ev.target)) list.classList.remove("show"); });
+}
+function initAddressSuggestForType(typeDef){
+  if(!typeDef || !typeDef.fields) return;
+  const addressFieldIds = typeDef.fields
+    .filter(f => ["recuperacao_endereco", "cto_defeito_endereco"].includes(f.id))
+    .map(f => f.id);
+  setTimeout(()=>{ addressFieldIds.forEach(attachAddressSuggest); }, 0);
+}
+
+// ====== GEO Utils (uso exclusivo no carimbo Certificação) ======
+function formatLocalDateTime(ts = Date.now()) {
+  try { return new Date(ts).toLocaleString("pt-BR", { hour12:false }); }
+  catch { return new Date().toISOString(); }
+}
+function getCurrentPositionText({ timeoutMs = 8000, enableHighAccuracy = true } = {}) {
+  return new Promise((resolve) => {
+    if (!("geolocation" in navigator)) {
+      return resolve("indisponível");
+    }
+    const onSuccess = (pos) => {
+      const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords || {};
+      if (lat == null || lng == null) return resolve("indisponível");
+      const latStr = Number(lat).toFixed(6);
+      const lngStr = Number(lng).toFixed(6);
+      const accStr = (acc != null) ? ` ±${Math.round(acc)}m` : "";
+      const when   = formatLocalDateTime(Date.now());
+      resolve(`${latStr}, ${lngStr}${accStr} | ${when}`);
+    };
+    const onError = () => resolve("indisponível");
+    try {
+      navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+        enableHighAccuracy,
+        timeout: timeoutMs,
+        maximumAge: 0
+      });
+    } catch { resolve("indisponível"); }
+  });
+}
+
+function renderDynamic(typeId) {
+  const root = $("dynamicRoot");
+  root.innerHTML = "";
+  if (!typeId) { root.innerHTML = `<div class="section"><div class="hint">Selecione um tipo de carimbo acima para ver os campos específicos.</div></div>`; hideOutput(); return; }
+  const typeDef = SCHEMA.types.find(t => t.id === typeId);
+  if (!typeDef) return;
+  root.innerHTML = `<div class="section"><div class="section-title">${escapeHtml(typeDef.title)}</div>${renderForm(typeDef.fields)}<div class="actions"><button class="btn-generate" id="btnGenerate" type="button">Gerar Carimbo</button><button class="btn-clear" id="btnClear" type="button">Limpar Formulário</button></div></div>`;
+
+  // 🔁 Handler do botão Gerar — com geolocalização SOMENTE para Certificação
+  $("btnGenerate").addEventListener("click", async () => {
+    if (typeDef.id === "certificacao") {
+      const geoField = $("certificacao_geo");
+      if (geoField) {
+        const prev = geoField.value;
+        geoField.value = "Coletando localização...";
+        try {
+          const geoText = await getCurrentPositionText({ timeoutMs: 8000, enableHighAccuracy: true });
+          geoField.value = geoText;
+        } catch {
+          geoField.value = "indisponível";
+        }
+      }
+    }
+    const data = collectData(typeDef);
+    const html = linesToSafeHtml(typeDef.stamp(data));
+    showOutput(html);
+  });
+
+  $("btnClear").addEventListener("click", () => clearTypeFields(typeDef));
+
+  setTimeout(() => {
+    for (const f of typeDef.fields) { if (f.type === "materials") initMaterialsField(f.id); }
+    // ➕ Ativa busca de endereço nos campos aplicáveis deste tipo
+    initAddressSuggestForType(typeDef);
+  }, 0);
+}
+
+// ✅ Campo técnicos em tabela (sem chips)
+function initTechsTableField(fieldId, { delimiter = " / " } = {}) {
+  const input = document.getElementById(`${fieldId}_input`);
+  const addBtn = document.getElementById(`${fieldId}_add`);
+  const tableWrap = document.getElementById(`${fieldId}_table`);
+  const hidden = document.getElementById(fieldId);
+
+  if (!input || !addBtn || !tableWrap || !hidden) return;
+
+  const state = { items: [] }; // {name, phone, matricula}
+
+  const syncHidden = () => {
+    hidden.value = state.items.map(x => x.name).join(delimiter);
+  };
+
+  const syncFirstPhone = () => {
+    const telInput = document.getElementById("tecnico_tel");
+    if (!telInput) return;
+    const first = state.items[0];
+    telInput.value = first ? formatPhoneBR(first.phone) : "";
+  };
+
+  const render = () => {
+    tableWrap.innerHTML = "";
+
+    if (state.items.length === 0) {
+      tableWrap.innerHTML = `<div class="muted">Nenhum técnico adicionado</div>`;
+      return;
+    }
+
+    const table = document.createElement("table");
+    const header = table.insertRow();
+    ["CONTATO", "MATRÍCULA", "COLABORADOR", ""].forEach(t => {
+      const th = document.createElement("th");
+      th.textContent = t;
+      header.appendChild(th);
+    });
+
+    state.items.forEach((it, idx) => {
+      const row = table.insertRow();
+      row.insertCell().textContent = formatPhoneBR(it.phone || "");
+      row.insertCell().textContent = it.matricula || "";
+      row.insertCell().textContent = it.name || "";
+
+      const actions = row.insertCell();
+      actions.style.textAlign = "center";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-x";
+      btn.textContent = "✕";
+      btn.title = "Remover";
+      btn.addEventListener("click", () => {
+        state.items.splice(idx, 1);
+        syncHidden();
+        syncFirstPhone();
+        render();
+      });
+      actions.appendChild(btn);
+    });
+
+    tableWrap.appendChild(table);
+  };
+
+  const addValue = () => {
+    const raw = (input.value || "").trim();
+    if (!raw) return;
+
+    const rec = findTechRecord(raw);
+    if (!rec) {
+      alert("Colaborador não encontrado. Selecione da lista ou informe matrícula/telefone válido.");
+      return;
+    }
+
+    const key = (rec.matricula || normalizeName(rec.name));
+    const exists = state.items.some(x => (x.matricula || normalizeName(x.name)) === key);
+    if (exists) { input.value = ""; return; }
+
+    state.items.push({ name: rec.name, phone: rec.phone, matricula: rec.matricula });
+
+    input.value = "";
+    syncHidden();
+    syncFirstPhone();
+    render();
+    input.focus();
+  };
+
+  addBtn.addEventListener("click", addValue);
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addValue();
+    }
+    if (e.key === "Backspace" && !input.value && state.items.length) {
+      state.items.pop();
+      syncHidden();
+      syncFirstPhone();
+      render();
+    }
+  });
+
+  // compatível com limpar formulário
+  hidden.__clearTags = () => {
+    state.items = [];
+    syncHidden();
+    syncFirstPhone();
+    render();
+  };
+
+  syncHidden();
+  syncFirstPhone();
+  render();
+}
+
+function initMaterialsField(fieldId) {
+  const searchInput = document.getElementById(`${fieldId}_search`);
+  const qty = document.getElementById(`${fieldId}_qty`);
+  const addBtn = document.getElementById(`${fieldId}_add_btn`);
+  const list = document.getElementById(`${fieldId}_list`);
+  const hidden = document.getElementById(fieldId);
+
+  if (!searchInput || !qty || !addBtn || !list || !hidden) return;
+
+  const state = { items: [] };
+
+  const syncHidden = () => { hidden.value = JSON.stringify(state.items); };
+
+  const render = () => {
+    list.innerHTML = "";
+
+    if (state.items.length === 0) {
+      list.innerHTML = `<p class="materials-empty">Nenhum material adicionado</p>`;
+      return;
+    }
+
+    const table = document.createElement("table");
+
+    const header = table.insertRow();
+    ["Material", "Qtd", "Un", ""].forEach(text => {
+      const th = document.createElement("th");
+      th.textContent = text;
+      header.appendChild(th);
+    });
+
+    state.items.forEach((item, idx) => {
+      const row = table.insertRow();
+
+      const c1 = row.insertCell(); c1.textContent = item.name;
+      const c2 = row.insertCell(); c2.textContent = item.quantity;
+      const c3 = row.insertCell(); c3.textContent = item.unit;
+
+      const c4 = row.insertCell();
+      c4.style.textAlign = "center";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "✕";
+      btn.style.background = "transparent";
+      btn.style.border = "none";
+      btn.style.cursor = "pointer";
+      btn.style.color = "var(--accent)";
+      btn.style.fontWeight = "700";
+
+      btn.addEventListener("click", () => {
+        state.items.splice(idx, 1);
+        syncHidden();
+        render();
+      });
+
+      c4.appendChild(btn);
+    });
+
+    list.appendChild(table);
+  };
+
+  const addMaterial = () => {
+    const materialKey = searchInput.value.trim();
+    const quantity = parseFloat(qty.value);
+
+    if (!materialKey || !quantity || quantity <= 0) {
+      alert("Digite um material e informe a quantidade válida");
+      return;
+    }
+
+    const materialData =
+      SCHEMA.lists.materials.find(m => m.name === materialKey) ||
+      SCHEMA.lists.materials.find(m => m.code === materialKey);
+
+    if (!materialData) {
+      alert("Material não encontrado. Selecione da lista.");
+      return;
+    }
+
+    state.items.push({
+      name: materialData.name,
+      quantity: quantity,
+      unit: materialData.unit,
+      code: materialData.code
+    });
+
+    searchInput.value = "";
+    qty.value = "";
+    syncHidden();
+    render();
+    searchInput.focus();
+  };
+
+  addBtn.addEventListener("click", addMaterial);
+  qty.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addMaterial();
+    }
+  });
+
+  hidden.__clearMaterials = () => {
+    state.items = [];
+    syncHidden();
+    render();
+  };
+
+  syncHidden();
+  render();
+}
+
+async function copyToClipboard() {
+  const text = $("outputText").innerText || "";
+  if (!text.trim()) return alert("Nenhum carimbo gerado. Gere o carimbo primeiro.");
+  try { await navigator.clipboard.writeText(text); } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.left = "-9999px";
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+  }
+  $("successMessage").classList.add("show");
+  setTimeout(() => $("successMessage").classList.remove("show"), 3000);
+}
+
+function sendToWhatsApp() {
+  const text = $("outputText").innerText || "";
+  if (!text.trim()) return alert("Nenhum carimbo gerado. Gere o carimbo primeiro.");
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+}
+
+function initBase() {
+  buildDatalist("supervisorList", SCHEMA.lists.supervisors.map(s => s.name));
+  buildDatalist("analistaList", SCHEMA.lists.analysts);
+  buildDatalist("tecnicoList", SCHEMA.lists.technicians);
+  buildDatalist("siteList", SCHEMA.lists.sites);
+
+  $("baseForm").innerHTML = renderForm(SCHEMA.baseFields);
+
+  // ✅ inicializa tabela de técnicos (substitui chips)
+  initTechsTableField("tecnicos", { delimiter: " / " });
+
+  $("carimbo_tipo").addEventListener("change", (e) => renderDynamic(e.target.value));
+  $("supervisor").addEventListener("input", function() {
+    const tel = supervisorPhones[normalizeName(this.value)];
+    $("supervisor_tel").value = tel ?? "";
+  });
+  $("btnCopy").addEventListener("click", copyToClipboard);
+  $("btnWhats").addEventListener("click", sendToWhatsApp);
+  renderDynamic($("carimbo_tipo").value);
+}
+
+document.addEventListener("DOMContentLoaded", initBase);
+  </script>
+</body>
+</html>
