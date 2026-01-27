@@ -306,7 +306,7 @@ techDirectory: [
       {id:"certificacao_material",label:"Materiais Utilizados",type:"materials",group:"full"},
       {id:"certificacao_foto",label:"Foto em anexo",type:"radio",name:"certificacao_foto",options:["Sim","Não"],group:"full"},
       // ✅ Campo de geolocalização específico (preenchido automaticamente ao gerar carimbo)
-      {id:"certificacao_geo",label:"Geolocalização (auto)",type:"text",placeholder:"Lat,Lng ±precisão | data e hora",readonly:true,group:"full"}
+      {id:"certificacao_geo",label:"Geolocalização (auto)",type:"text",placeholder:" >> Preenchimento automático << ",readonly:true,group:"full"}
     ],
 stamp:(d)=>{
   const materials = JSON.parse(d.certificacao_material || "[]");
