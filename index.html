@@ -160,7 +160,7 @@ const SCHEMA = {
     technicians: ["placeholder"],
 
     sites: ["RSCBM_G1N01","RSCBM_O1A01","RSGUB_G1N01","RSNHO_G1I02","RSPAE_G1B95","RSPAE_G1C01","RSPAE_G1I22","RSPAE_G1I23","RSPAE_G1I24","RSPAE_G1I25","RSPAE_G1I26","RSPAE_G1I32","RSPAE_G1I33","RSPAE_G1I35","RSPAE_G1I41","RSPAE_G1I47","RSPAE_G1I48","RSPAE_G1I51","RSPAE_G1I55","RSPAE_G1I57","RSPAE_G1N42","RSPAE_G1N45","RSSLE_G1M01","RSSLE_O1A04"],
-    causes: ["Abalroamento","Furto","Acidente","Descarga","Vandalismo","Troca de poste","Degradação / Infiltração","Defeito Splitter","Falha em atividade anterior","Obra de terceiros","Interperie","Ataque de animais"],
+    causes: ["Abalroamento","Furto","Acidente","Descarga","Vandalismo","Troca de poste","Degradação / Infiltração","Defeito","Falha em atividade anterior","Obra de terceiros","Interperie","Ataque de animais","Sem defeito pra rede"],
     materials: [
       {id:"mat_0001",name:"ALÇA PREFORM P/ DROP ÓPT ASU ATÉ 12 FO",code:"0056-0003-0",unit:"un"},
       {id:"mat_0002",name:"SPLITTER OPT. PASSIVO 1:8-10 DB-FTTH",code:"0192-0219-9",unit:"un"},
@@ -271,6 +271,7 @@ const SCHEMA = {
     {id:"certificacao",label:"4. Certificação",title:"SOLICITAÇÃO DE CERTIFICAÇÃO",fields:[
       {id:"certificacao_tratativa",label:"Tratativa realizada",type:"textarea",placeholder:"Descrição da tratativa realizada",group:"full"},
       {id:"certificacao_causa",label:"Causa",type:"select",optionsFrom:"causes",group:"two"},
+      {id:"certificacao_subcausa",label:"Subcausa",type:"subcause_dynamic",dependsOn:"certificacao_causa",group:"full"},
       {id:"certificacao_material",label:"Materiais Utilizados",type:"materials",group:"full"},
             {id:"certificacao_anexos",label:"Anexos (fotos/arquivos)",type:"file",accept:"image/*,application/pdf",multiple:true,help:"Selecione fotos/arquivos. No celular, use a câmera se desejar.",group:"full"},
       {id:"certificacao_foto",label:"Foto em anexo",type:"radio",name:"certificacao_foto",options:["Sim","Não"],group:"full"}
@@ -303,11 +304,14 @@ return [
   `Telefone: ${d.supervisor_tel}`,
   `Técnicos(s): ${d.tecnicos}`,
   `Telefone: ${d.tecnico_tel}`,
-  `Tratativa realizada: ${d.certificacao_tratativa}`,
-  `Causa: ${d.certificacao_causa}`,
+  `Tratativa realizada: ${d.certificacao_tratativa}`,  `Causa: ${d.certificacao_causa || getLastCause() || "indisponível"}`,
+  `Causa (Carimbo 3): ${getLastCause() || "indisponível"}`,
+  ...(d.certificacao_subcausa ? [`Subcausa: ${d.certificacao_subcausa}`] : []),
   ...materialLines,
   `Foto em anexo: ${d.certificacao_foto}`,
+      `Anexos selecionados: ${getFiles('certificacao_anexos').length ? getFiles('certificacao_anexos').map(f=>f.name).join(', ') : 'Nenhum'}` ,
   `Analista CCR: ${d.analista_ccr}`,
+
   // ✅ Agora em campos separados
   `Lat./Long.: ${latLong}`,
   `Acurácia: ${accuracy}`,
@@ -350,6 +354,26 @@ return [
     }
   ]
 };
+
+
+// ====== SUBCAUSAS (Carimbo 4 usa a CAUSA do Carimbo 3 como sugestão) ======
+const SUBCAUSES = {
+  "Furto": ["Cabo", "CEO", "CTO", "Splitter"],
+  "Acidente": ["Carga alta", "Linha de pipa"],
+  "Descarga": ["Atmosferica", "Eletrica"],
+  "Degradação / Infiltração": ["CEO", "CTO", "DGOI"],
+  "Defeito": ["Splitter Atenuado", "Fibra curta", "Saída de Splitter", "Sem sinal"],
+  "Falha em atividade anterior": ["Atenuação", "Desorganização", "Fibra invertida", "Fibra quebrada"],
+  "Obra de terceiros": ["Outras obras", "Poda de Arvore", "Troca de poste não programada"],
+  "Ataque de animais": ["Abelha", "Formiga", "Outros", "Roedores"],
+  "Sem defeito pra rede": ["Encontrado OK"]
+};
+
+// Persistência da CAUSA do Carimbo 3 (Recuperação)
+const LAST_CAUSE_KEY = "last_cause_carimbo3";
+const setLastCause = (cause) => localStorage.setItem(LAST_CAUSE_KEY, (cause || "").trim());
+const getLastCause = () => (localStorage.getItem(LAST_CAUSE_KEY) || "").trim();
+
 
 // ====== MAPA DE CAMPOS OBRIGATÓRIOS (Observações REMOVIDAS) ======
 const REQUIRED = {
@@ -533,6 +557,21 @@ if (type === "select") {
     </div>`;
   }
 
+
+  // ====== Subcausa (select dinâmico) dependente de uma CAUSA ======
+  if (type === "subcause_dynamic") {
+    const dep = field.dependsOn || "";
+    return `
+      <div id="${safeId}_wrap" style="display:none">
+        <label for="${safeId}">${safeLabel}</label>
+        <select id="${safeId}" data-depends="${escapeHtml(dep)}">
+          <option value="">-- Selecione a Subcausa --</option>
+        </select>
+        <div class="mini" id="${safeId}_hint" style="margin-top:6px"></div>
+      </div>
+    `;
+  }
+
   const inputType = escapeHtml(type || "text");
   // ✅ Desativar autocomplete do navegador apenas nos 2 campos de endereço
   const disableBrowserAutocomplete =
@@ -631,6 +670,60 @@ function attachAddressSuggest(inputId){
 }
 function initAddressSuggestForType(typeDef){ if(!typeDef || !typeDef.fields) return; const addressFieldIds = typeDef.fields.filter(f => ["recuperacao_endereco", "cto_defeito_endereco"].includes(f.id)).map(f => f.id); setTimeout(()=>{ addressFieldIds.forEach(attachAddressSuggest); }, 0); }
 
+
+// ====== Subcausa dinâmica (Carimbo 4): depende da CAUSA selecionada ======
+function initSubcauseDynamic(typeDef){
+  const fields = (typeDef?.fields || []).filter(f => f.type === "subcause_dynamic");
+  if (!fields.length) return;
+
+  fields.forEach(f => {
+    const subId = f.id;
+    const wrap = document.getElementById(`${subId}_wrap`);
+    const sel  = document.getElementById(subId);
+    const hint = document.getElementById(`${subId}_hint`);
+    const causeId = f.dependsOn;
+    const causeEl = document.getElementById(causeId);
+    if(!wrap || !sel || !causeEl) return;
+
+    // Para Carimbo 4: se a causa estiver vazia, sugere a última do Carimbo 3
+    if (typeDef.id === "certificacao") {
+      const last = getLastCause();
+      if (!causeEl.value && last) causeEl.value = last;
+    }
+
+    function refresh(){
+      const cause = (causeEl.value || "").trim() || getLastCause();
+      const options = SUBCAUSES[cause] || [];
+
+      if(!cause){
+        wrap.style.display = "none";
+        sel.innerHTML = `<option value="">-- Selecione a Subcausa --</option>`;
+        sel.value = "";
+        if(hint) hint.textContent = "Causa (Carimbo 3) não informada";
+        return;
+      }
+
+      // Se a causa não tiver subcausas, esconde subcausa
+      if(!options.length){
+        wrap.style.display = "none";
+        sel.innerHTML = `<option value="">-- Selecione a Subcausa --</option>`;
+        sel.value = "";
+        if(hint) hint.textContent = `Causa selecionada: ${cause} (sem subcausa)`;
+        return;
+      }
+
+      sel.innerHTML = `<option value="">-- Selecione a Subcausa --</option>` +
+        options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+
+      wrap.style.display = "block";
+      if(hint) hint.textContent = `Causa selecionada: ${cause} | Última (Carimbo 3): ${getLastCause() || "-"}`;
+    }
+
+    causeEl.addEventListener("change", refresh);
+    refresh();
+  });
+}
+
 // ====== GEO Utils (uso exclusivo no carimbo Certificação) ======
 function formatLocalDateTime(ts = Date.now()) { try { return new Date(ts).toLocaleString("pt-BR", { hour12:false }); } catch { return new Date().toISOString(); } }
 function getCurrentPositionText({ timeoutMs = 8000, enableHighAccuracy = true } = {}) { return new Promise((resolve) => { if (!("geolocation" in navigator)) { return resolve("indisponível"); } const onSuccess = (pos) => { const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords || {}; if (lat == null || lng == null) return resolve("indisponível"); const latStr = Number(lat).toFixed(6); const lngStr = Number(lng).toFixed(6); const accStr = (acc != null) ? ` ±${Math.round(acc)}m` : ""; const when = formatLocalDateTime(Date.now()); resolve(`${latStr}, ${lngStr}${accStr} | ${when}`); }; const onError = () => resolve("indisponível"); try { navigator.geolocation.getCurrentPosition(onSuccess, onError, { enableHighAccuracy, timeout: timeoutMs, maximumAge: 0 }); } catch { resolve("indisponível"); } }); }
@@ -660,6 +753,26 @@ function validateRequired(typeDef, data) {
 
   
 
+
+  // ✅ Carimbo 4 (Certificação): Causa pode ser selecionada aqui, mas sugere a última do Carimbo 3
+  if (typeId === "certificacao") {
+    const causeSel = (data.certificacao_causa || "").trim();
+    const cause3 = getLastCause();
+    const cause = causeSel || cause3;
+
+    if (!cause) {
+      if (!missing.includes("Causa (Carimbo 4)")) missing.push("Causa (Carimbo 4)");
+    }
+
+    const opts = SUBCAUSES[cause] || [];
+    if (opts.length > 0) {
+      const sub = (data.certificacao_subcausa || "").trim();
+      if (!sub) {
+        if (!missing.includes("Subcausa")) missing.push("Subcausa");
+      }
+    }
+  }
+
 // Campos do tipo datalist: obrigar seleção da lista (sem digitação livre)
 const allFields = [...(SCHEMA.baseFields || []), ...(typeDef.fields || [])];
 allFields.filter(f=>f.type==='datalist').forEach(f=>{
@@ -686,6 +799,12 @@ function renderDynamic(typeId) {
   $("btnGenerate").addEventListener("click", async () => {
     let data = collectData(typeDef);
 
+
+
+    // ✅ Carimbo 3 (Recuperação): salva a Causa selecionada para uso no Carimbo 4
+    if (typeDef.id === "recuperacao") {
+      setLastCause(data.recuperacao_causa || "");
+    }
     // Captura GEO apenas para Certificação (obrigatório)
     if (typeDef.id === "certificacao") {
       try { data.certificacao_geo = await getCurrentPositionText({ timeoutMs: 8000, enableHighAccuracy: true }); }
@@ -712,6 +831,15 @@ function renderDynamic(typeId) {
     }
     attachDatalistEnforcement(typeDef.fields);
     initAddressSuggestForType(typeDef);
+
+    // ✅ Subcausa dinâmica (Carimbo 4)
+    initSubcauseDynamic(typeDef);
+
+    // ✅ Atualiza a Causa salva ao trocar no Carimbo 3
+    if (typeDef.id === "recuperacao") {
+      const el = document.getElementById("recuperacao_causa");
+      if (el) el.addEventListener("change", () => setLastCause(el.value || ""));
+    }
   }, 0);
 }
 
@@ -730,9 +858,10 @@ function initTechsTableField(fieldId, { delimiter = " / " } = {}) {
     if (state.items.length === 0) { tableWrap.innerHTML = `<div class="muted">Nenhum técnico adicionado</div>`; return; }
     const table = document.createElement("table");
     const header = table.insertRow();
-    ["MATRÍCULA", "COLABORADOR", ""].forEach(t => { const th = document.createElement("th"); th.textContent = t; header.appendChild(th); });
+    ["CONTATO", "MATRÍCULA", "COLABORADOR", ""].forEach(t => { const th = document.createElement("th"); th.textContent = t; header.appendChild(th); });
     state.items.forEach((it, idx) => {
       const row = table.insertRow();
+      row.insertCell().textContent = formatPhoneBR(it.phone || "");
       row.insertCell().textContent = it.matricula || "";
       row.insertCell().textContent = it.name || "";
       const actions = row.insertCell(); actions.style.textAlign = "center";
